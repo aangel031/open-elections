@@ -48,6 +48,11 @@ class UploadHandler(webapp2.RequestHandler):
         for key in precinct_to_votes:
             entry = precinct_to_votes[key]
             # TODO: create PrecinctVotes objects and save with .put()
+            precinct_votes = PrecinctVotes()
+            precinct_votes.precinct = entry['precinct']
+            precinct_votes.county = entry['county']
+            precinct_votes.votes = entry['votes']
+
             precinct_votes.put()
         self.response.out.write('Upload successful')
 
@@ -56,7 +61,11 @@ class PrecinctHandler(webapp2.RequestHandler):
         results = []
         # TODO: Use PrecinctVotes.query() to get all precints and then append
         # to the results list as a dictionary (use to_dict())
-        PrecinctVotes.query().to_dict()
+        all_precincts = PrecinctVotes.query()
+
+        for precinct in all_precincts:
+            results.append(precinct.to_dict())
+
         self.response.out.write(json.dumps(results))
         self.response.headers.add_header('Content-Type', 'application/json')
 
