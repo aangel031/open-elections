@@ -33,14 +33,6 @@
 				pixelOffset: new google.maps.Size(-10, 10)
 			})
 
-			map.data.addListener('click', function(event){
-				var electDist = event.feature.getProperty('elect_dist');
-
-				var content = 'Election District' + electDist + '<br>';
-				infoWindow.setContent(content);
-				infoWindow.setPosition(event.latLng);
-				infoWindow.open(map);
-			})
 
 			var distToVotes = {};
 			var voteRequest = new Request("/precincts");
@@ -62,13 +54,42 @@
 
 						var keys = Object.keys(distVotes);
 
+						var highestVote = distVotes[keys[0]];
+						var highestIndex = 0;
+
 						for (var i = keys.length - 1; i >= 0; i--) {
-							console.log(distVotes[keys[i]], keys[i])
+							// /console.log(distVotes[keys[i]], keys[i])
+							if (highestVote <= distVotes[keys[i]]){
+								highestVote =  distVotes[keys[i]];
+								highestIndex = i;
+							}
+						}
+						var winningCandidate = keys[highestIndex];
+
+						if(winningCandidate.includes("Trump")){
+							color = "red";
+						} else {
+							color = "blue";
 						}
 					}
 
-					return {fillColor: color, fillOpacity: 0.4, strokeWeitght: 1};
+					return {fillColor: color, fillOpacity: 0.4, strokeWeight: 1};
 				});
+
+				map.data.addListener('click', function(event){
+					var electDist = event.feature.getProperty('elect_dist');
+					var distInfo = distToVotes[electDist];
+					var votes = distInfo.votes;
+
+					var content = 'Election District' + electDist + '<br />';
+					Object.keys(votes).forEach(function(key){
+						content += "<br /> +" + key + ': ' + votes[key];
+					});
+
+					infoWindow.setContent(content);
+					infoWindow.setPosition(event.latLng);
+					infoWindow.open(map);
+				})
 			});
 
 		}
